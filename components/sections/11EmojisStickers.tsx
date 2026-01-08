@@ -34,14 +34,22 @@ export default function EmojisStickersSection() {
         <h3 className="text-2xl font-semibold">Sticker Spotlight</h3>
         <p className="mt-2 text-white/70">Top sticker koleksiyonunuz.</p>
         <div className="mt-4 grid grid-cols-3 gap-3">
-          {wrapped2025.stickers.map((sticker) => (
+          {wrapped2025.topStickers.slice(0, 12).map((sticker) => (
             <div
               key={sticker.id}
               className="flex flex-col items-center justify-center rounded-2xl bg-white/10 px-2 py-3 text-center"
             >
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500/40 to-cyan-400/40 text-xs font-semibold">
-                {sticker.label}
-              </div>
+              {sticker.src ? (
+                <img
+                  src={sticker.src}
+                  alt={sticker.label}
+                  className="h-16 w-16 rounded-xl bg-white/10 object-contain p-2"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500/40 to-cyan-400/40 text-xs font-semibold">
+                  Sticker
+                </div>
+              )}
               <p className="mt-2 text-xs text-white/70">{sticker.count} kez</p>
             </div>
           ))}

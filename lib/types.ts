@@ -27,9 +27,17 @@ export type StickerEntry = {
   id: string;
   label: string;
   count: number;
-  sizeBytes: number;
+  sizeBytes: number | null;
   thumbUrl?: string;
   src?: string;
+};
+
+export type TopStickerEntry = {
+  id: string;
+  label: string;
+  count: number;
+  sizeBytes: number | null;
+  src: string | null;
 };
 
 export type CallMetric = {
@@ -67,6 +75,7 @@ export type WrappedAgg = {
   topWords: { word: string; count: number }[];
   emojiTop: EmojiEntry[];
   stickers: StickerEntry[];
+  topStickers: TopStickerEntry[];
   topics: string[];
   topicSamples: { topic: string; sample: string }[];
   topPhrases: { phrase: string; count: number }[];

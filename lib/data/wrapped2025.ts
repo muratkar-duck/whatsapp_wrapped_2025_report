@@ -129,6 +129,14 @@ export const wrapped2025: WrappedAgg = {
     { id: "sticker-5", label: "Mood", count: 61, sizeBytes: 53002 },
     { id: "sticker-6", label: "LOL", count: 58, sizeBytes: 46210 }
   ],
+  topStickers: [
+    { id: "sticker-1", label: "Happy", count: 92, sizeBytes: 48124, src: null },
+    { id: "sticker-2", label: "Coffee", count: 80, sizeBytes: 39812, src: null },
+    { id: "sticker-3", label: "Dance", count: 74, sizeBytes: 51244, src: null },
+    { id: "sticker-4", label: "Bye", count: 68, sizeBytes: 44201, src: null },
+    { id: "sticker-5", label: "Mood", count: 61, sizeBytes: 53002, src: null },
+    { id: "sticker-6", label: "LOL", count: 58, sizeBytes: 46210, src: null }
+  ],
   topics: [
     "Travel planning",
     "Dinner ideas",

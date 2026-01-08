@@ -2,11 +2,14 @@ import fs from "fs";
 import path from "path";
 import type { Agg } from "../lib/types";
 
-const rawPath = path.join(process.cwd(), "data", "raw", "chat.txt");
+const rawPrimaryPath = path.join(process.cwd(), "data", "raw", "chat.txt");
+const rawFallbackPath = path.join(process.cwd(), "data", "raw", "_chat.txt");
+const stickerReportPath = path.join(process.cwd(), "data", "raw", "whatsapp_sticker_analizi.txt");
+const stickerAssetsPath = path.join(process.cwd(), "public", "stickers");
 const outputPath = path.join(process.cwd(), "lib", "data", "wrapped2025.generated.ts");
 
 const lineRegex =
-  /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})[,\s](\d{1,2}:\d{2})(?::(\d{2}))? - (.*?): (.*)$/;
+  /^\[?(\d{1,2})\.(\d{1,2})\.(\d{2,4})[,\s](\d{1,2}:\d{2})(?::(\d{2}))?\]?\s-?\s?(.*?): (.*)$/;
 
 const emojiRegex = /\p{Extended_Pictographic}/gu;
 
@@ -96,6 +99,12 @@ type GapSample = {
   diffSeconds: number;
 };
 
+type StickerReportGroup = {
+  count: number;
+  sizeBytes: number | null;
+  filenames: string[];
+};
+
 const pad = (value: number) => String(value).padStart(2, "0");
 
 const formatDateTime = (date: Date, includeSeconds: boolean) => {
@@ -114,8 +123,81 @@ const sanitizeTokens = (text: string) => {
     .filter(Boolean);
 };
 
-if (!fs.existsSync(rawPath)) {
-  console.log(`WhatsApp export not found at ${rawPath}. Add chat.txt and rerun npm run ingest.`);
+const parseStickerSizeBytes = (raw: string, unit: string) => {
+  const normalized = raw.replace(",", ".");
+  const value = Number.parseFloat(normalized);
+  if (Number.isNaN(value)) {
+    return null;
+  }
+
+  const normalizedUnit = unit.toLowerCase();
+  if (normalizedUnit.startsWith("kb") || normalizedUnit.startsWith("kib")) {
+    return Math.round(value * 1024);
+  }
+  if (normalizedUnit.startsWith("mb") || normalizedUnit.startsWith("mib")) {
+    return Math.round(value * 1024 * 1024);
+  }
+  if (normalizedUnit.startsWith("b") || normalizedUnit.startsWith("byte")) {
+    return Math.round(value);
+  }
+
+  return Math.round(value);
+};
+
+const extractStickerFilenames = (line: string) => line.match(/[^\s,;]+\.webp/gi) ?? [];
+
+const parseStickerReport = () => {
+  if (!fs.existsSync(stickerReportPath)) {
+    console.log(`Sticker report not found at ${stickerReportPath}.`);
+    return [] as StickerReportGroup[];
+  }
+
+  const content = fs.readFileSync(stickerReportPath, "utf-8");
+  const lines = content.split(/\r?\n/);
+  const groups: StickerReportGroup[] = [];
+  let current: StickerReportGroup | null = null;
+
+  lines.forEach((line) => {
+    const countMatch = line.match(/(\d+)\s*kez/i);
+    const sizeMatch = line.match(/(\d+(?:[.,]\d+)?)\s*(kb|kib|mb|mib|bytes?|byte|b)\b/i);
+
+    if (countMatch && sizeMatch) {
+      if (current) {
+        groups.push(current);
+      }
+      const sizeBytes = parseStickerSizeBytes(sizeMatch[1], sizeMatch[2]);
+      current = {
+        count: Number.parseInt(countMatch[1], 10),
+        sizeBytes,
+        filenames: extractStickerFilenames(line)
+      };
+      return;
+    }
+
+    if (current) {
+      current.filenames.push(...extractStickerFilenames(line));
+    }
+  });
+
+  if (current) {
+    groups.push(current);
+  }
+
+  return groups;
+};
+
+const rawPath = fs.existsSync(rawPrimaryPath)
+  ? rawPrimaryPath
+  : fs.existsSync(rawFallbackPath)
+    ? rawFallbackPath
+    : null;
+
+if (!rawPath) {
+  const stubContents = `import type { Agg } from "../types";\n\nexport const agg: Agg | null = null;\n`;
+  fs.writeFileSync(outputPath, stubContents, "utf-8");
+  console.log(
+    `WhatsApp export not found at ${rawPrimaryPath} or ${rawFallbackPath}. Wrote stub aggregate.`
+  );
   process.exit(0);
 }
 
@@ -172,6 +254,7 @@ if (messages.length === 0) {
     topWords: [],
     emojiTop: [],
     stickers: [],
+    topStickers: [],
     topics: [],
     topicSamples: [],
     topPhrases: [],
@@ -293,9 +376,27 @@ const stickers = [...stickerCounts.entries()]
     id: filename,
     label: filename.replace(/\.webp$/i, ""),
     count,
-    sizeBytes: 0,
+    sizeBytes: null,
     src: `/stickers/${filename}`
   }));
+
+const stickerAssets = fs.existsSync(stickerAssetsPath)
+  ? new Set(fs.readdirSync(stickerAssetsPath))
+  : new Set<string>();
+const stickerReportGroups = parseStickerReport();
+const topStickers = stickerReportGroups.map((group, index) => {
+  const uniqueFilenames = [...new Set(group.filenames)];
+  const matchedFilename = uniqueFilenames.find((filename) => stickerAssets.has(filename));
+  const src = matchedFilename ? `/stickers/${matchedFilename}` : null;
+
+  return {
+    id: matchedFilename ?? `sticker-${index + 1}`,
+    label: matchedFilename ? matchedFilename.replace(/\.webp$/i, "") : "Sticker",
+    count: group.count,
+    sizeBytes: group.sizeBytes ?? null,
+    src
+  };
+});
 
 const stickerTotal = [...stickerCounts.values()].reduce((sum, value) => sum + value, 0);
 
@@ -350,6 +451,7 @@ const agg: Agg = {
   topWords,
   emojiTop,
   stickers,
+  topStickers,
   topics: [],
   topicSamples: [],
   topPhrases: [],
