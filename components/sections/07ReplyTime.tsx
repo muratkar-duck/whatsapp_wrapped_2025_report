@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import CanvasHistogram from "@/components/charts/CanvasHistogram";
-import { wrapped2025 } from "@/lib/data/wrapped2025";
+import { wrapped2025 } from "@/lib/data";
 
 const formatWait = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);

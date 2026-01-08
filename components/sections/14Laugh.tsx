@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { wrapped2025 } from "@/lib/data/wrapped2025";
+import { wrapped2025 } from "@/lib/data";
 
 export default function LaughSection() {
   const prefersReducedMotion = useReducedMotion();
