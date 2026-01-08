@@ -2,11 +2,12 @@ import fs from "fs";
 import path from "path";
 import type { Agg } from "../lib/types";
 
-const rawPath = path.join(process.cwd(), "data", "raw", "chat.txt");
+const rawPrimaryPath = path.join(process.cwd(), "data", "raw", "chat.txt");
+const rawFallbackPath = path.join(process.cwd(), "data", "raw", "_chat.txt");
 const outputPath = path.join(process.cwd(), "lib", "data", "wrapped2025.generated.ts");
 
 const lineRegex =
-  /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})[,\s](\d{1,2}:\d{2})(?::(\d{2}))? - (.*?): (.*)$/;
+  /^\[?(\d{1,2})\.(\d{1,2})\.(\d{2,4})[,\s](\d{1,2}:\d{2})(?::(\d{2}))?\]?\s-?\s?(.*?): (.*)$/;
 
 const emojiRegex = /\p{Extended_Pictographic}/gu;
 
@@ -114,8 +115,18 @@ const sanitizeTokens = (text: string) => {
     .filter(Boolean);
 };
 
-if (!fs.existsSync(rawPath)) {
-  console.log(`WhatsApp export not found at ${rawPath}. Add chat.txt and rerun npm run ingest.`);
+const rawPath = fs.existsSync(rawPrimaryPath)
+  ? rawPrimaryPath
+  : fs.existsSync(rawFallbackPath)
+    ? rawFallbackPath
+    : null;
+
+if (!rawPath) {
+  const stubContents = `import type { Agg } from "../types";\n\nexport const agg: Agg | null = null;\n`;
+  fs.writeFileSync(outputPath, stubContents, "utf-8");
+  console.log(
+    `WhatsApp export not found at ${rawPrimaryPath} or ${rawFallbackPath}. Wrote stub aggregate.`
+  );
   process.exit(0);
 }
 
