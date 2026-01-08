@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import CanvasWordCloud from "@/components/charts/CanvasWordCloud";
-import { wrapped2025 } from "@/lib/data/wrapped2025";
+import { wrapped2025 } from "@/lib/data";
 
 export default function WordCloudSection() {
   const prefersReducedMotion = useReducedMotion();

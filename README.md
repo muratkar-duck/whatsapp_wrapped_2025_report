@@ -28,6 +28,12 @@ Update v1 content in:
 - `lib/data/wrapped2025.ts`
 - `lib/types.ts`
 
+## Data Ingestion (WhatsApp Export)
+
+1. Put your WhatsApp export in `data/raw/chat.txt`.
+2. Run `npm run ingest` to generate `lib/data/wrapped2025.generated.ts`.
+3. Deploy as usual.
+
 ## Vercel Deploy
 
 1. Push the repository to GitHub.
@@ -80,9 +86,17 @@ components/
     CanvasWordCloud.tsx
 lib/
   data/
+    index.ts
     wrapped2025.ts
+    wrapped2025.generated.ts
   types.ts
   canvas/
     draw.ts
     scale.ts
+data/
+  raw/
+    chat.txt
+    .gitkeep
+scripts/
+  parse-whatsapp.ts
 ```

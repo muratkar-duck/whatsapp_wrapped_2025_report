@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import CanvasBarWeekdays from "@/components/charts/CanvasBarWeekdays";
-import { wrapped2025 } from "@/lib/data/wrapped2025";
+import { wrapped2025 } from "@/lib/data";
 
 export default function WeekdaySection() {
   const prefersReducedMotion = useReducedMotion();

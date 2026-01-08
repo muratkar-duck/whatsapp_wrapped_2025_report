@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import CanvasBarMonth from "@/components/charts/CanvasBarMonth";
-import { wrapped2025 } from "@/lib/data/wrapped2025";
+import { wrapped2025 } from "@/lib/data";
 
 export default function MonthlySection() {
   const prefersReducedMotion = useReducedMotion();

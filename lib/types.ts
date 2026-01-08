@@ -29,6 +29,7 @@ export type StickerEntry = {
   count: number;
   sizeBytes: number;
   thumbUrl?: string;
+  src?: string;
 };
 
 export type CallMetric = {
@@ -77,3 +78,5 @@ export type WrappedAgg = {
     gsmInsights: GsmInsights;
   };
 };
+
+export type Agg = WrappedAgg;
