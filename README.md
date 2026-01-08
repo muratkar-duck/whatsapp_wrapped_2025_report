@@ -16,6 +16,12 @@ npm run build
 npm run start
 ```
 
+## Stickers
+
+- Place all WhatsApp sticker `.webp` files into `public/stickers/`
+- Files can be drag & dropped directly
+- They will be accessible at `/stickers/<filename>.webp`
+
 ## Hardcoded Data
 
 Update v1 content in:
